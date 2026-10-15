@@ -1,0 +1,80 @@
+{
+  "name": "meowsab",
+  "version": "0.0.2-alpha",
+  "description": "A professional and powerful WhatsApp bot framework built on Baileys. Create sophisticated bots with ease - just initialize the bot, define your message handlers and routes, and you're ready to go. Features built-in keyboard system, message parsing, middleware support, and comprehensive event handling for building production-ready WhatsApp bots.",
+  "license": "MIT",
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "meowsab",
+    "baileys",
+    "whatsapp-bot",
+    "chatbot",
+    "framework",
+    "whatsapp-api",
+    "bot-library",
+    "whatsapp-library"
+  ],
+  "author": "VA (https://github.com/deveni0)",
+  "type": "module",
+  "main": "dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch example/index.js",
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "watch": "tsc --watch",
+    "start": "node example/index.js",
+    "fmt-fix": "biome check --write --unsafe src/**/*.ts"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./safe": "./safe.js"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@hono/node-server": "^2.1.1",
+    "axios": "^1.19.0",
+    "chokidar": "^5.0.0",
+    "file-type": "^22.0.2",
+    "filter-console": "^1.0.0",
+    "hono": "^4.13.5",
+    "import-without-cache": "^0.4.1",
+    "lru-cache": "^11.0.0",
+    "pino": "^10.3.1",
+    "pkg-dir": "^8.0.0",
+    "qrcode-terminal": "^0.12.0",
+    "sharp": "^0.35.3",
+    "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "better-sqlite3": ">=12.0.0",
+    "ioredis": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "better-sqlite3": {
+      "optional": true
+    },
+    "ioredis": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@types/qrcode-terminal": "^0.12.2",
+    "tsup": "^8.5.1",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}
