@@ -1,0 +1,727 @@
+import { z } from 'zod';
+import * as file_type from 'file-type';
+
+declare const ConfigSchema: z.ZodObject<{
+    session_storage: z.ZodDefault<z.ZodObject<{
+        type: z.ZodDefault<z.ZodString>;
+        path: z.ZodDefault<z.ZodString>;
+    }, z.core.$strip>>;
+    library: z.ZodOptional<z.ZodArray<z.ZodAny>>;
+    socket: z.ZodOptional<z.ZodUnion<readonly [z.ZodNumber, z.ZodRecord<z.ZodString, z.ZodAny>]>>;
+    settings: z.ZodDefault<z.ZodObject<{
+        no_message_baileys: z.ZodBoolean;
+        from_me: z.ZodBoolean;
+        private_mode: z.ZodBoolean;
+        message_owner_only: z.ZodBoolean;
+        message_group_only: z.ZodBoolean;
+    }, z.core.$strip>>;
+    reconnect: z.ZodDefault<z.ZodObject<{
+        retry_delay: z.ZodDefault<z.ZodNumber>;
+        retry_attempts: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strip>>;
+    login: z.ZodDefault<z.ZodObject<{
+        method: z.ZodDefault<z.ZodEnum<{
+            pair: "pair";
+            qr: "qr";
+        }>>;
+        code: z.ZodOptional<z.ZodString>;
+        number: z.ZodOptional<z.ZodCoercedString<unknown>>;
+    }, z.core.$strip>>;
+    logging: z.ZodDefault<z.ZodObject<{
+        logger_baileys: z.ZodDefault<z.ZodAny>;
+        logger_meowsab: z.ZodDefault<z.ZodString>;
+    }, z.core.$strip>>;
+    group_cache: z.ZodDefault<z.ZodObject<{
+        enabled: z.ZodDefault<z.ZodBoolean>;
+        maximum_size: z.ZodDefault<z.ZodNumber>;
+        ttl_seconds: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strip>>;
+    owners: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        username: z.ZodOptional<z.ZodString>;
+        status: z.ZodDefault<z.ZodBoolean>;
+        lid: z.ZodOptional<z.ZodString>;
+        jid: z.ZodOptional<z.ZodString>;
+        name: z.ZodOptional<z.ZodString>;
+    }, z.core.$strict>>>;
+    enable_logs: z.ZodDefault<z.ZodBoolean>;
+    plugsdir: z.ZodOptional<z.ZodString>;
+    prefix: z.ZodDefault<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>]>>;
+    info: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>;
+}, z.core.$strip>;
+
+type ConfigTypes = z.infer<typeof ConfigSchema>;
+
+declare class Client {
+    private config;
+    private sock;
+    private plugins;
+    version: string;
+    settings: any;
+    session: any;
+    premium: boolean;
+    group_cache: any;
+    constructor(config: ConfigTypes);
+    connect(): Promise<void>;
+    socket(): Promise<any>;
+    commands(query?: string): Promise<any>;
+    sever(options: {
+        ip?: string;
+        port: number;
+        loggers?: boolean;
+    }): Promise<void>;
+    buyer(options: {
+        token: string;
+        settings?: any;
+    }): Promise<void>;
+    plug(): any;
+    clear(): void;
+    stop(): Promise<void>;
+}
+
+type TokenType = 'KEYWORD' | 'STR' | 'NUM' | 'COMMENT' | 'DEFAULT';
+interface Block {
+    content: string;
+    type: TokenType;
+}
+
+declare const Misc: {
+    delay: (time: number) => Promise<unknown>;
+    urlToBuffer: (url: string) => Promise<Buffer<ArrayBuffer>>;
+    fileType: (file: any) => Promise<file_type.FileTypeResult | {
+        mime: null;
+        ext: null;
+    }>;
+    isValidUrl: (url: string) => boolean;
+    syntax: (lg: string, code: string) => Block[];
+};
+
+declare function getMediaSize(msg: any): number;
+declare function getMediaDimensions(msg: any): {
+    width: number;
+    height: number;
+    seconds?: number;
+};
+declare function getMediaMimetype(msg: any): string;
+declare function getMediaFilename(msg: any): string;
+declare function extractUrl(text: string): string[];
+declare function extractMentionedJids(text: string): string[];
+declare function extractQuotedText(msg: any): string;
+declare function extractQuotedJid(msg: any): string;
+declare function extractQuotedMessageId(msg: any): string;
+declare function isGroupJid(jid: string): boolean;
+declare function isUserJid(jid: string): boolean;
+declare function isBroadcastJid(jid: string): boolean;
+declare function isStatusJid(jid: string): boolean;
+declare function getJidWithoutDevice(jid: string): string;
+declare function getJidDevice(jid: string): string;
+declare function getPhoneNumberFromJid(jid: string): string;
+declare function duration(url: string): Promise<any>;
+declare function getMessageTimestamp(msg: any): Date;
+declare function getMessageAgeInSeconds(msg: any): number;
+declare function isMessageOld(msg: any, seconds?: number): boolean;
+declare function formatMessageTime(timestamp: number): string;
+declare function getMessageType(msg: any): string;
+declare function hasMedia(msg: any): boolean;
+declare function hasQuotedMessage(msg: any): boolean;
+declare function hasMentions(msg: any): boolean;
+declare function hasReaction(msg: any): boolean;
+declare function isCommand(msg: any, prefix?: string): boolean;
+declare function isGroupAdmin(participants: any[], jid: string): boolean;
+declare function isGroupSuperAdmin(participants: any[], jid: string): boolean;
+declare function isGroupParticipant(participants: any[], jid: string): boolean;
+declare function getGroupAdmins(participants: any[]): string[];
+declare function getGroupSuperAdmins(participants: any[]): string[];
+declare function getGroupParticipantsCount(participants: any[]): {
+    total: number;
+    admins: number;
+    superAdmins: number;
+};
+declare function truncate(str: string, length: number): string;
+declare function removeEmojis(text: string): string;
+declare function extractEmojis(text: string): string[];
+declare function countWords(text: string): number;
+declare function countCharacters(text: string): number;
+declare function countLines(text: string): number;
+declare function formatFileSize(bytes: number): string;
+declare function formatDuration(seconds: number): string;
+declare function formatNumber(num: number): string;
+declare function formatPercentage(num: number): string;
+declare function isValidUrl(text: string): boolean;
+declare function isValidPhoneNumber(text: string): boolean;
+declare function isValidEmail(text: string): boolean;
+declare function isValidJid(jid: string): boolean;
+declare function isValidMessage(msg: any): boolean;
+declare function getExtensionFromMime(mime: string): string;
+declare function getRandomInt(min: number, max: number): number;
+declare function getRandomString(length: number): string;
+declare function getRandomHex(length: number): string;
+declare function getRandomColor(): string;
+declare function getRandomElement<T>(arr: T[]): T;
+declare function shuffleArray<T>(arr: T[]): T[];
+declare function chunkArray<T>(arr: T[], size: number): T[][];
+declare function removeDuplicates<T>(arr: T[]): T[];
+declare function sortByKey<T>(arr: T[], key: keyof T, ascending?: boolean): T[];
+declare function groupByKey<T>(arr: T[], key: keyof T): {
+    [key: string]: T[];
+};
+declare function keysMessagesObjWA(compilation: any, arry: string[]): Promise<any>;
+declare function mergeArrays<T>(...arrays: T[][]): T[];
+declare function intersectArrays<T>(arr1: T[], arr2: T[]): T[];
+declare function diffArrays<T>(arr1: T[], arr2: T[]): T[];
+declare function sum(arr: number[]): number;
+declare function average(arr: number[]): number;
+declare function median(arr: number[]): number;
+declare function mode(arr: number[]): number[];
+declare function min(arr: number[]): number;
+declare function max(arr: number[]): number;
+declare function range(arr: number[]): number;
+declare function variance(arr: number[]): number;
+declare function standardDeviation(arr: number[]): number;
+declare function percentile(arr: number[], p: number): number;
+declare function getCurrentTimestamp(): number;
+declare function getCurrentISO(): string;
+declare function getCurrentDateTime(): string;
+declare function getCurrentDate(): string;
+declare function getCurrentTime(): string;
+declare function addDays(date: Date, days: number): Date;
+declare function addHours(date: Date, hours: number): Date;
+declare function addMinutes(date: Date, minutes: number): Date;
+declare function addSeconds(date: Date, seconds: number): Date;
+declare function diffDays(date1: Date, date2: Date): number;
+declare function diffHours(date1: Date, date2: Date): number;
+declare function diffMinutes(date1: Date, date2: Date): number;
+declare function diffSeconds(date1: Date, date2: Date): number;
+declare function hexToRgb(hex: string): {
+    r: number;
+    g: number;
+    b: number;
+};
+declare function rgbToHex(r: number, g: number, b: number): string;
+declare function rgbToHsl(r: number, g: number, b: number): {
+    h: number;
+    s: number;
+    l: number;
+};
+declare function hslToRgb(h: number, s: number, l: number): {
+    r: number;
+    g: number;
+    b: number;
+};
+declare function lightenColor(hex: string, percent: number): string;
+declare function darkenColor(hex: string, percent: number): string;
+declare function isLightColor(hex: string): boolean;
+declare function isDarkColor(hex: string): boolean;
+declare function getContrastColor(hex: string): string;
+declare function deepClone<T>(obj: T): T;
+declare function deepMerge<T extends object, U extends object>(target: T, source: U): T & U;
+declare function isObject(item: any): boolean;
+declare function isEmptyObject(obj: object): boolean;
+declare function getObjectSize(obj: object): number;
+declare function pickKeys<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
+declare function omitKeys<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K>;
+declare function invertObject(obj: object): {
+    [key: string]: string;
+};
+declare function flattenObject(obj: object, prefix?: string): object;
+declare function unique<T>(arr: T[]): T[];
+declare function flattenArray<T>(arr: any[]): T[];
+declare function partition<T>(arr: T[], predicate: (item: T) => boolean): [T[], T[]];
+declare function groupBy<T>(arr: T[], key: keyof T): {
+    [key: string]: T[];
+};
+declare function countBy<T>(arr: T[], key: keyof T): {
+    [key: string]: number;
+};
+declare function rotate<T>(arr: T[], steps: number): T[];
+declare function chunk<T>(arr: T[], size: number): T[][];
+declare function window<T>(arr: T[], size: number): T[][];
+declare function zip<T, U>(arr1: T[], arr2: U[]): [T, U][];
+declare function unzip<T, U>(pairs: [T, U][]): [T[], U[]];
+declare function capitalize(str: string): string;
+declare function capitalizeWords(str: string): string;
+declare function reverseString(str: string): string;
+declare function isPalindrome(str: string): boolean;
+declare function countOccurrences(str: string, substr: string): number;
+declare function replaceAll(str: string, find: string, replace: string): string;
+declare function maskString(str: string, visibleCount?: number, maskChar?: string): string;
+declare function extractNumbers(str: string): number[];
+declare function extractLetters(str: string): string[];
+declare function removeWhitespace(str: string): string;
+declare function trimAll(str: string): string;
+declare function toSnakeCase(str: string): string;
+declare function toCamelCase(str: string): string;
+declare function toKebabCase(str: string): string;
+declare function toPascalCase(str: string): string;
+declare function isEven(num: number): boolean;
+declare function isOdd(num: number): boolean;
+declare function isPrime(num: number): boolean;
+declare function factorial(num: number): number;
+declare function fibonacci(n: number): number[];
+declare function gcd(a: number, b: number): number;
+declare function lcm(a: number, b: number): number;
+declare function roundTo(num: number, decimals: number): number;
+declare function floorTo(num: number, decimals: number): number;
+declare function ceilTo(num: number, decimals: number): number;
+declare function clamp(num: number, min: number, max: number): number;
+declare function mapRange(num: number, fromMin: number, fromMax: number, toMin: number, toMax: number): number;
+declare function lerp(start: number, end: number, t: number): number;
+declare function normalize(num: number, min: number, max: number): number;
+declare function toBoolean(value: any): boolean;
+declare function isTruthy(value: any): boolean;
+declare function isFalsy(value: any): boolean;
+declare function allTrue(...values: boolean[]): boolean;
+declare function anyTrue(...values: boolean[]): boolean;
+declare function allFalse(...values: boolean[]): boolean;
+declare function anyFalse(...values: boolean[]): boolean;
+declare function toggle(flag: boolean): boolean;
+declare function isString(value: any): boolean;
+declare function isNumber(value: any): boolean;
+declare function isBoolean(value: any): boolean;
+declare function isArray(value: any): boolean;
+declare function isFunction(value: any): boolean;
+declare function isDate(value: any): boolean;
+declare function isRegExp(value: any): boolean;
+declare function isPromise(value: any): boolean;
+declare function isNull(value: any): boolean;
+declare function isUndefined(value: any): boolean;
+declare function isNullOrUndefined(value: any): boolean;
+declare function isNumeric(value: any): boolean;
+declare function isInteger(value: any): boolean;
+declare function isFloat(value: any): boolean;
+declare function stringToNumber(str: string): number;
+declare function numberToString(num: number, decimals?: number): string;
+declare function stringToBoolean(str: string): boolean;
+declare function booleanToString(bool: boolean): string;
+declare function stringToArray(str: string, delimiter?: string): string[];
+declare function arrayToString(arr: any[], delimiter?: string): string;
+declare function objectToQueryString(obj: object): string;
+declare function queryStringToObject(str: string): object;
+declare function base64Encode(str: string): string;
+declare function base64Decode(str: string): string;
+declare function utf8ToHex(str: string): string;
+declare function hexToUtf8(hex: string): string;
+declare class CacheManager {
+    private cache;
+    set(key: string, value: any, ttl?: number): void;
+    get(key: string): any;
+    has(key: string): boolean;
+    delete(key: string): boolean;
+    clear(): void;
+    size(): number;
+    keys(): string[];
+    values(): any[];
+    private cleanup;
+}
+declare class QueueManager<T> {
+    private queue;
+    private processing;
+    private handlers;
+    add(item: T): void;
+    addMany(items: T[]): void;
+    registerHandler(type: string, handler: (item: T) => Promise<void>): void;
+    size(): number;
+    clear(): void;
+    private process;
+}
+declare class RateLimiter {
+    private maxRequests;
+    private timeWindow;
+    private limits;
+    constructor(maxRequests: number, timeWindow: number);
+    check(key: string): boolean;
+    getRemaining(key: string): number;
+    getResetTime(key: string): number | null;
+    reset(key: string): void;
+    resetAll(): void;
+}
+declare enum LogLevel {
+    DEBUG = 0,
+    INFO = 1,
+    WARN = 2,
+    ERROR = 3,
+    NONE = 4
+}
+declare class Logger {
+    private level;
+    private context;
+    constructor(context?: string, level?: LogLevel);
+    setLevel(level: LogLevel): void;
+    debug(message: string, ...args: any[]): void;
+    info(message: string, ...args: any[]): void;
+    warn(message: string, ...args: any[]): void;
+    error(message: string, ...args: any[]): void;
+    private getTimestamp;
+}
+declare class ConfigManager {
+    private config;
+    private defaults;
+    set(key: string, value: any): void;
+    get(key: string): any;
+    setDefault(key: string, value: any): void;
+    has(key: string): boolean;
+    delete(key: string): boolean;
+    loadFromObject(obj: object): void;
+    loadFromEnv(prefix?: string): void;
+    toObject(): object;
+    merge(config: ConfigManager): void;
+    reset(): void;
+}
+declare class StatsCollector {
+    private stats;
+    add(key: string, value: number): void;
+    increment(key: string, by?: number): void;
+    get(key: string): {
+        count: number;
+        sum: number;
+        avg: number;
+        min: number;
+        max: number;
+    };
+    getAll(): object;
+    reset(key?: string): void;
+}
+declare class Timer {
+    private startTime;
+    private endTime;
+    private laps;
+    start(): void;
+    stop(): number;
+    lap(): number;
+    reset(): void;
+    getElapsed(): number;
+    getLaps(): number[];
+}
+declare function throttle<T extends (...args: any[]) => any>(func: T, limit: number): (...args: Parameters<T>) => void;
+declare function debounce<T extends (...args: any[]) => any>(func: T, delay: number): (...args: Parameters<T>) => void;
+declare function memoize<T extends (...args: any[]) => any>(func: T, resolver?: (...args: Parameters<T>) => string): T;
+declare function randomInt(min: number, max: number): number;
+declare function randomFloat(min: number, max: number): number;
+declare function randomBoolean(): boolean;
+declare function randomHexColor(): string;
+declare function randomRgbColor(): string;
+declare function randomHslColor(): string;
+declare function randomItem<T>(arr: T[]): T;
+declare function randomItems<T>(arr: T[], count: number): T[];
+declare function randomString(length: number, charset?: string): string;
+declare function randomNumberString(length: number): string;
+declare function randomAlphaString(length: number): string;
+declare function randomHexString(length: number): string;
+declare function randomBase64String(length: number): string;
+declare function randomDate(start: Date, end: Date): Date;
+declare function randomTime(): string;
+declare function randomIP(): string;
+declare function randomMAC(): string;
+declare function randomUUID(): string;
+declare function randomPhoneNumber(): string;
+declare function randomEmail(): string;
+declare function randomUsername(): string;
+declare function randomPassword(length?: number): string;
+declare const Utils: {
+    getMediaSize: typeof getMediaSize;
+    getMediaDimensions: typeof getMediaDimensions;
+    getMediaMimetype: typeof getMediaMimetype;
+    getMediaFilename: typeof getMediaFilename;
+    extractUrl: typeof extractUrl;
+    extractMentionedJids: typeof extractMentionedJids;
+    extractQuotedText: typeof extractQuotedText;
+    extractQuotedJid: typeof extractQuotedJid;
+    extractQuotedMessageId: typeof extractQuotedMessageId;
+    isGroupJid: typeof isGroupJid;
+    isUserJid: typeof isUserJid;
+    isBroadcastJid: typeof isBroadcastJid;
+    isStatusJid: typeof isStatusJid;
+    getJidWithoutDevice: typeof getJidWithoutDevice;
+    getJidDevice: typeof getJidDevice;
+    getPhoneNumberFromJid: typeof getPhoneNumberFromJid;
+    getMessageTimestamp: typeof getMessageTimestamp;
+    getMessageAgeInSeconds: typeof getMessageAgeInSeconds;
+    isMessageOld: typeof isMessageOld;
+    formatMessageTime: typeof formatMessageTime;
+    getMessageType: typeof getMessageType;
+    hasMedia: typeof hasMedia;
+    hasQuotedMessage: typeof hasQuotedMessage;
+    hasMentions: typeof hasMentions;
+    hasReaction: typeof hasReaction;
+    isCommand: typeof isCommand;
+    isGroupAdmin: typeof isGroupAdmin;
+    isGroupSuperAdmin: typeof isGroupSuperAdmin;
+    isGroupParticipant: typeof isGroupParticipant;
+    getGroupAdmins: typeof getGroupAdmins;
+    getGroupSuperAdmins: typeof getGroupSuperAdmins;
+    getGroupParticipantsCount: typeof getGroupParticipantsCount;
+    truncate: typeof truncate;
+    removeEmojis: typeof removeEmojis;
+    extractEmojis: typeof extractEmojis;
+    countWords: typeof countWords;
+    countCharacters: typeof countCharacters;
+    countLines: typeof countLines;
+    formatFileSize: typeof formatFileSize;
+    formatDuration: typeof formatDuration;
+    duration: typeof duration;
+    formatNumber: typeof formatNumber;
+    formatPercentage: typeof formatPercentage;
+    isValidUrl: typeof isValidUrl;
+    isValidPhoneNumber: typeof isValidPhoneNumber;
+    isValidEmail: typeof isValidEmail;
+    isValidJid: typeof isValidJid;
+    isValidMessage: typeof isValidMessage;
+    getExtensionFromMime: typeof getExtensionFromMime;
+    getRandomInt: typeof getRandomInt;
+    getRandomString: typeof getRandomString;
+    getRandomHex: typeof getRandomHex;
+    getRandomColor: typeof getRandomColor;
+    getRandomElement: typeof getRandomElement;
+    shuffleArray: typeof shuffleArray;
+    chunkArray: typeof chunkArray;
+    removeDuplicates: typeof removeDuplicates;
+    sortByKey: typeof sortByKey;
+    groupByKey: typeof groupByKey;
+    keysMessagesObjWA: typeof keysMessagesObjWA;
+    mergeArrays: typeof mergeArrays;
+    intersectArrays: typeof intersectArrays;
+    diffArrays: typeof diffArrays;
+    sum: typeof sum;
+    average: typeof average;
+    median: typeof median;
+    mode: typeof mode;
+    min: typeof min;
+    max: typeof max;
+    range: typeof range;
+    variance: typeof variance;
+    standardDeviation: typeof standardDeviation;
+    percentile: typeof percentile;
+    getCurrentTimestamp: typeof getCurrentTimestamp;
+    getCurrentISO: typeof getCurrentISO;
+    getCurrentDateTime: typeof getCurrentDateTime;
+    getCurrentDate: typeof getCurrentDate;
+    getCurrentTime: typeof getCurrentTime;
+    addDays: typeof addDays;
+    addHours: typeof addHours;
+    addMinutes: typeof addMinutes;
+    addSeconds: typeof addSeconds;
+    diffDays: typeof diffDays;
+    diffHours: typeof diffHours;
+    diffMinutes: typeof diffMinutes;
+    diffSeconds: typeof diffSeconds;
+    hexToRgb: typeof hexToRgb;
+    rgbToHex: typeof rgbToHex;
+    rgbToHsl: typeof rgbToHsl;
+    hslToRgb: typeof hslToRgb;
+    lightenColor: typeof lightenColor;
+    darkenColor: typeof darkenColor;
+    isLightColor: typeof isLightColor;
+    isDarkColor: typeof isDarkColor;
+    getContrastColor: typeof getContrastColor;
+    deepClone: typeof deepClone;
+    deepMerge: typeof deepMerge;
+    isObject: typeof isObject;
+    isEmptyObject: typeof isEmptyObject;
+    getObjectSize: typeof getObjectSize;
+    pickKeys: typeof pickKeys;
+    omitKeys: typeof omitKeys;
+    invertObject: typeof invertObject;
+    flattenObject: typeof flattenObject;
+    unique: typeof unique;
+    flattenArray: typeof flattenArray;
+    partition: typeof partition;
+    groupBy: typeof groupBy;
+    countBy: typeof countBy;
+    rotate: typeof rotate;
+    chunk: typeof chunk;
+    window: typeof window;
+    zip: typeof zip;
+    unzip: typeof unzip;
+    capitalize: typeof capitalize;
+    capitalizeWords: typeof capitalizeWords;
+    reverseString: typeof reverseString;
+    isPalindrome: typeof isPalindrome;
+    countOccurrences: typeof countOccurrences;
+    replaceAll: typeof replaceAll;
+    maskString: typeof maskString;
+    extractNumbers: typeof extractNumbers;
+    extractLetters: typeof extractLetters;
+    removeWhitespace: typeof removeWhitespace;
+    trimAll: typeof trimAll;
+    toSnakeCase: typeof toSnakeCase;
+    toCamelCase: typeof toCamelCase;
+    toKebabCase: typeof toKebabCase;
+    toPascalCase: typeof toPascalCase;
+    isEven: typeof isEven;
+    isOdd: typeof isOdd;
+    isPrime: typeof isPrime;
+    factorial: typeof factorial;
+    fibonacci: typeof fibonacci;
+    gcd: typeof gcd;
+    lcm: typeof lcm;
+    roundTo: typeof roundTo;
+    floorTo: typeof floorTo;
+    ceilTo: typeof ceilTo;
+    clamp: typeof clamp;
+    mapRange: typeof mapRange;
+    lerp: typeof lerp;
+    normalize: typeof normalize;
+    toBoolean: typeof toBoolean;
+    isTruthy: typeof isTruthy;
+    isFalsy: typeof isFalsy;
+    allTrue: typeof allTrue;
+    anyTrue: typeof anyTrue;
+    allFalse: typeof allFalse;
+    anyFalse: typeof anyFalse;
+    toggle: typeof toggle;
+    isString: typeof isString;
+    isNumber: typeof isNumber;
+    isBoolean: typeof isBoolean;
+    isArray: typeof isArray;
+    isFunction: typeof isFunction;
+    isDate: typeof isDate;
+    isRegExp: typeof isRegExp;
+    isPromise: typeof isPromise;
+    isNull: typeof isNull;
+    isUndefined: typeof isUndefined;
+    isNullOrUndefined: typeof isNullOrUndefined;
+    isNumeric: typeof isNumeric;
+    isInteger: typeof isInteger;
+    isFloat: typeof isFloat;
+    stringToNumber: typeof stringToNumber;
+    numberToString: typeof numberToString;
+    stringToBoolean: typeof stringToBoolean;
+    booleanToString: typeof booleanToString;
+    stringToArray: typeof stringToArray;
+    arrayToString: typeof arrayToString;
+    objectToQueryString: typeof objectToQueryString;
+    queryStringToObject: typeof queryStringToObject;
+    base64Encode: typeof base64Encode;
+    base64Decode: typeof base64Decode;
+    utf8ToHex: typeof utf8ToHex;
+    hexToUtf8: typeof hexToUtf8;
+    CacheManager: typeof CacheManager;
+    QueueManager: typeof QueueManager;
+    RateLimiter: typeof RateLimiter;
+    Logger: typeof Logger;
+    LogLevel: typeof LogLevel;
+    ConfigManager: typeof ConfigManager;
+    StatsCollector: typeof StatsCollector;
+    Timer: typeof Timer;
+    throttle: typeof throttle;
+    debounce: typeof debounce;
+    memoize: typeof memoize;
+    keyCore1: () => Promise<any>;
+    keyCore2: () => Promise<any>;
+    randomInt: typeof randomInt;
+    randomFloat: typeof randomFloat;
+    randomBoolean: typeof randomBoolean;
+    randomHexColor: typeof randomHexColor;
+    randomRgbColor: typeof randomRgbColor;
+    randomHslColor: typeof randomHslColor;
+    randomItem: typeof randomItem;
+    randomItems: typeof randomItems;
+    randomString: typeof randomString;
+    randomNumberString: typeof randomNumberString;
+    randomAlphaString: typeof randomAlphaString;
+    randomHexString: typeof randomHexString;
+    randomBase64String: typeof randomBase64String;
+    randomDate: typeof randomDate;
+    randomTime: typeof randomTime;
+    randomIP: typeof randomIP;
+    randomMAC: typeof randomMAC;
+    randomUUID: typeof randomUUID;
+    randomPhoneNumber: typeof randomPhoneNumber;
+    randomEmail: typeof randomEmail;
+    randomUsername: typeof randomUsername;
+    randomPassword: typeof randomPassword;
+};
+
+declare const ClientConfigSchema: z.ZodObject<{
+    root: z.ZodDefault<z.ZodString>;
+    storage: z.ZodDefault<z.ZodEnum<{
+        json: "json";
+        sqlite: "sqlite";
+        auto: "auto";
+    }>>;
+    code: z.ZodOptional<z.ZodString>;
+    max: z.ZodDefault<z.ZodNumber>;
+    main: z.ZodAny;
+    settings: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodAny>>;
+}, z.core.$strip>;
+type ClientConfig = z.infer<typeof ClientConfigSchema>;
+type ClientConfigInput = z.input<typeof ClientConfigSchema>;
+interface BotInfo {
+    id: string;
+    name: string;
+    phone: string;
+    lid: string | null;
+    connected: boolean;
+    messages: number;
+    socket: () => Promise<any>;
+}
+interface ClientEvents {
+    message: (sock: any, msg: any) => void;
+    ready: (sock: any) => void;
+    close: (sock: any, code?: number) => void;
+    pairing: (code: string, phone: string) => void;
+    qr: (qr: string, phone: string) => void;
+    removed: (phone: string) => void;
+}
+type EventPool = {
+    [K in keyof ClientEvents]?: ClientEvents[K][];
+};
+interface Bot {
+    id: string;
+    phone: string;
+    dir: string;
+    sock: any;
+    session: any;
+    connected: boolean;
+    registered: boolean;
+    pairingCode: string | null;
+    stopped: boolean;
+    dead: boolean;
+    retries: number;
+    erased: boolean;
+    idle: boolean;
+    idleAt: number;
+    createdAt: number;
+    gen: number;
+    messages: number;
+}
+interface BotsFull {
+    full: true;
+    count: number;
+    max: number;
+}
+type AddResult = string | null | BotsFull;
+
+declare class SubBots {
+    config: ClientConfig;
+    bots: Map<string, Bot>;
+    started: boolean;
+    sweep: NodeJS.Timeout | null;
+    main: any;
+    listeners: EventPool;
+    private ctx;
+    constructor(config: ClientConfigInput);
+    get count(): number;
+    get max(): number;
+    get full(): boolean;
+    on<K extends keyof ClientEvents>(event: K, fn: ClientEvents[K]): this;
+    off<K extends keyof ClientEvents>(event: K, fn: ClientEvents[K]): this;
+    addBot(phone: string): Promise<AddResult>;
+    list(): BotInfo[];
+    stats(): {
+        total: number;
+        connected: number;
+        stopped: number;
+        messages: number;
+        max: number;
+        full: boolean;
+    };
+    get(key: string): BotInfo | null;
+    socket(key: string): Promise<any>;
+    remove(key: string): Promise<boolean>;
+    removeAll(): Promise<void>;
+    start(): Promise<void>;
+    stop(): Promise<void>;
+    private find;
+}
+
+export { Client, Misc, SubBots, Utils };
