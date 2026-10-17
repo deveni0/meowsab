@@ -71,7 +71,7 @@ declare class Client {
     connect(): Promise<void>;
     socket(): Promise<any>;
     commands(query?: string): Promise<any>;
-    sever(options: {
+    server(options: {
         ip?: string;
         port: number;
         loggers?: boolean;
