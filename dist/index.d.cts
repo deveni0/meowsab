@@ -1,3 +1,5 @@
+import * as hono from 'hono';
+import * as hono_types from 'hono/types';
 import { z } from 'zod';
 import * as file_type from 'file-type';
 
@@ -55,12 +57,17 @@ declare class Client {
     private config;
     private sock;
     private plugins;
+    private _events;
     version: string;
     settings: any;
     session: any;
     premium: boolean;
     group_cache: any;
+    private _update;
+    get update(): Record<string, any>;
     constructor(config: ConfigTypes);
+    on(event: string, handler: (...args: any[]) => any): this;
+    push(event: string, ...args: any[]): Promise<void>;
     connect(): Promise<void>;
     socket(): Promise<any>;
     commands(query?: string): Promise<any>;
@@ -68,7 +75,7 @@ declare class Client {
         ip?: string;
         port: number;
         loggers?: boolean;
-    }): Promise<void>;
+    }): Promise<hono.Hono<hono_types.BlankEnv, hono_types.BlankSchema, "/">>;
     buyer(options: {
         token: string;
         settings?: any;
