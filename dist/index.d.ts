@@ -278,6 +278,18 @@ declare function isTruthy(value: any): boolean;
 declare function isFalsy(value: any): boolean;
 declare function allTrue(...values: boolean[]): boolean;
 declare function anyTrue(...values: boolean[]): boolean;
+interface StickerMetadata {
+    'sticker-pack-id'?: string;
+    'sticker-pack-name'?: string;
+    'sticker-pack-publisher'?: string;
+    emojis?: string[];
+    [key: string]: unknown;
+}
+interface StickerOptions {
+    full?: boolean;
+    meta?: StickerMetadata;
+}
+declare function toSticker(source: Buffer | string, options?: StickerOptions): Promise<Buffer>;
 declare function allFalse(...values: boolean[]): boolean;
 declare function anyFalse(...values: boolean[]): boolean;
 declare function toggle(flag: boolean): boolean;
@@ -589,6 +601,7 @@ declare const Utils: {
     isNumeric: typeof isNumeric;
     isInteger: typeof isInteger;
     isFloat: typeof isFloat;
+    toSticker: typeof toSticker;
     stringToNumber: typeof stringToNumber;
     numberToString: typeof numberToString;
     stringToBoolean: typeof stringToBoolean;
