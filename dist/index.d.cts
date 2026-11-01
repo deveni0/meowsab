@@ -685,7 +685,7 @@ interface ClientEvents {
 type EventPool = {
     [K in keyof ClientEvents]?: ClientEvents[K][];
 };
-interface Bot {
+type Bot = {
     id: string;
     phone: string;
     dir: string;
@@ -703,7 +703,8 @@ interface Bot {
     createdAt: number;
     gen: number;
     messages: number;
-}
+    since: number;
+};
 interface BotsFull {
     full: true;
     count: number;
@@ -719,6 +720,7 @@ declare class SubBots {
     main: any;
     listeners: EventPool;
     private ctx;
+    private sys;
     constructor(config: ClientConfigInput);
     get count(): number;
     get max(): number;
