@@ -651,6 +651,67 @@ declare const Utils: {
     randomPassword: typeof randomPassword;
 };
 
+type Params = Record<string, unknown>;
+interface ApiResult {
+    [key: string]: unknown;
+}
+declare const registry: {
+    readonly auralix: {
+        readonly url: "https://auralix-api.vercel.app/api";
+        readonly endpoints: {
+            readonly changer: "/tools/voice-changer";
+            readonly zero: "/ai/zeroai";
+            readonly matching: "/image/matching";
+            readonly logo: "/logo/textpro";
+            readonly witanime_search: {
+                readonly path: "/anime/witanime-search";
+                readonly key: "venianime";
+                readonly method: "GET";
+            };
+            readonly witanime_download: {
+                readonly path: "/anime/witanime-download";
+                readonly key: "venianime";
+                readonly method: "GET";
+            };
+        };
+    };
+    readonly "union-v": {
+        readonly url: "https://vii7-apis.vercel.app/api";
+        readonly endpoints: {
+            readonly tiktok: "/tt";
+            readonly instagram: "/ig";
+        };
+    };
+    readonly emam: {
+        readonly url: "https://emam-api-test.vercel.app/home";
+        readonly endpoints: {
+            readonly tiktok: "/download/tiktok";
+        };
+    };
+};
+type EndpointConfig = string | {
+    path: string;
+    key?: string;
+    method?: "GET" | "POST";
+};
+declare class ApiBuilder {
+    private base;
+    constructor(base: string);
+    request(path: string, params?: Params, opts?: {
+        key?: string;
+        method?: "GET" | "POST";
+    }): Promise<ApiResult>;
+    url(path: string, params?: Params): Promise<ApiResult>;
+}
+type Registry = typeof registry;
+type ApiName = keyof Registry;
+type Built<T extends Record<string, EndpointConfig>> = ApiBuilder & {
+    [K in keyof T]: (params?: Params) => Promise<ApiResult>;
+};
+declare const Api: {
+    name<K extends ApiName>(name: K): Promise<Built<Registry[K]["endpoints"]>>;
+};
+
 declare const ClientConfigSchema: z.ZodObject<{
     root: z.ZodDefault<z.ZodString>;
     storage: z.ZodDefault<z.ZodEnum<{
@@ -741,9 +802,13 @@ declare class SubBots {
     socket(key: string): Promise<any>;
     remove(key: string): Promise<boolean>;
     removeAll(): Promise<void>;
+    clear(key?: string, hours?: number): Promise<{
+        bots: number;
+        removed: number;
+    }>;
     start(): Promise<void>;
     stop(): Promise<void>;
     private find;
 }
 
-export { Client, Misc, SubBots, Utils };
+export { Api, Client, Misc, SubBots, Utils };
