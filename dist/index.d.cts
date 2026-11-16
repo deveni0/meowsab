@@ -651,6 +651,13 @@ declare const Utils: {
     randomPassword: typeof randomPassword;
 };
 
+declare const Scrape: {
+    textpro: (style: string, text: string | string[]) => Promise<{
+        image: string;
+        session: string | undefined;
+    }>;
+};
+
 type Params = Record<string, unknown>;
 interface ApiResult {
     [key: string]: unknown;
@@ -687,6 +694,10 @@ declare const registry: {
         readonly endpoints: {
             readonly tiktok: "/download/tiktok";
         };
+    };
+    readonly ota: {
+        readonly url: "https://api.otakugifs.xyz";
+        readonly endpoints: {};
     };
 };
 type EndpointConfig = string | {
@@ -811,4 +822,4 @@ declare class SubBots {
     private find;
 }
 
-export { Api, Client, Misc, SubBots, Utils };
+export { Api, Client, Misc, Scrape, SubBots, Utils };
