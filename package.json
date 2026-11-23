@@ -1,6 +1,6 @@
 {
   "name": "meowsab",
-  "version": "0.0.2-alpha",
+  "version": "0.1.0",
   "description": "A professional and powerful WhatsApp bot framework built on Baileys. Create sophisticated bots with ease - just initialize the bot, define your message handlers and routes, and you're ready to go. Features built-in keyboard system, message parsing, middleware support, and comprehensive event handling for building production-ready WhatsApp bots.",
   "license": "MIT",
   "keywords": [
